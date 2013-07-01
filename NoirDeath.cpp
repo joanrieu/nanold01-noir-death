@@ -9,11 +9,14 @@
 int main() {
 
         sf::RenderWindow win(sf::VideoMode(BLOCK_COLS * BLOCK_SIZE, BLOCK_LINES * BLOCK_SIZE), "nanoLD - Fififox - Noir Death");
+        win.setMouseCursorVisible(true);
+        sf::Font font;
+        font.loadFromFile("Tuffy.ttf");
 
-        win.Clear();
-        win.Draw(sf::Text("\tNoir...\tDeath...\n\tDon't let the light take us!"));
-        win.Display();
-        sf::Sleep(3000);
+        win.clear();
+        win.draw(sf::Text("\tNoir...\tDeath...\n\tDon't let the light take us!", font));
+        win.display();
+        sf::sleep(sf::milliseconds(3000));
 
         bool cells[BLOCK_COLS * BLOCK_LINES];
 
@@ -23,12 +26,12 @@ int main() {
 
         unsigned remaining = BLOCK_COLS * BLOCK_LINES / 2;
 
-        while (win.IsOpened() and remaining and remaining != BLOCK_COLS * BLOCK_LINES) {
+        while (win.isOpen() and remaining and remaining != BLOCK_COLS * BLOCK_LINES) {
 
-                win.Display();
+                win.display();
 
                 sf::Event event;
-                while (win.PollEvent(event)) {
+                while (win.pollEvent(event)) {
 
                         {
 
@@ -45,12 +48,12 @@ int main() {
 
                         }
 
-                        if ((event.Type == sf::Event::KeyPressed and event.Key.Code == sf::Keyboard::Escape) or event.Type == sf::Event::Closed)
-                                win.Close();
-                        else if (event.Type == sf::Event::MouseButtonPressed) {
+                        if ((event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::Escape) or event.type == sf::Event::Closed)
+                                win.close();
+                        else if (event.type == sf::Event::MouseButtonPressed) {
 
-                                unsigned x = ( event.MouseButton.X * BLOCK_COLS ) / win.GetWidth();
-                                unsigned y = ( event.MouseButton.Y * BLOCK_LINES) / win.GetHeight();
+                                unsigned x = ( event.mouseButton.x * BLOCK_COLS ) / win.getSize().x;
+                                unsigned y = ( event.mouseButton.y * BLOCK_LINES) / win.getSize().y;
 
                                 const bool old = cells[y * BLOCK_COLS + x];
                                 remaining += old ? -1 : 1;
@@ -60,29 +63,34 @@ int main() {
 
                 }
 
-                win.Clear();
+                win.clear();
 
-                for (unsigned line = 0; line < BLOCK_LINES; ++line)
-                        for (unsigned col = 0; col < BLOCK_COLS; ++col)
-                                win.Draw(sf::Shape::Rectangle(sf::FloatRect(sf::Vector2f(col, line) * static_cast<float>(BLOCK_SIZE), sf::Vector2f(BLOCK_SIZE, BLOCK_SIZE)), (cells[line * BLOCK_COLS + col] ? sf::Color(255, 255, 255) : sf::Color(0, 0, 0))));
+                for (unsigned line = 0; line < BLOCK_LINES; ++line) {
+                        for (unsigned col = 0; col < BLOCK_COLS; ++col) {
+                                sf::RectangleShape rect(sf::Vector2f(BLOCK_SIZE, BLOCK_SIZE));
+                                rect.setPosition(sf::Vector2f(col, line) * static_cast<float>(BLOCK_SIZE));
+                                rect.setFillColor(cells[line * BLOCK_COLS + col] ? sf::Color(255, 255, 255) : sf::Color(0, 0, 0));
+                                win.draw(rect);
+                        }
+                }
 
         }
 
-        if (not win.IsOpened())
+        if (not win.isOpen())
                 return 0;
 
-        win.Clear();
+        win.clear();
 
         if (not remaining)
-                win.Draw(sf::Text("\tNoir... Death... Our Victory!"));
+                win.draw(sf::Text("\tNoir... Death... Our Victory!", font));
         else
-                win.Draw(sf::Text("\tWhy?\tWhy did you abandon us?\tAAAaaarrrggghhh!!!"));
+                win.draw(sf::Text("\tWhy?\tWhy did you abandon us?\tAAAaaarrrggghhh!!!", font));
 
-        win.Display();
+        win.display();
 
         sf::Event event;
-        while (true)
-                if (win.PollEvent(event) and ((event.Type == sf::Event::KeyPressed and event.Key.Code == sf::Keyboard::Escape) or event.Type == sf::Event::Closed))
+        while (win.waitEvent(event))
+                if ((event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::Escape) or event.type == sf::Event::Closed)
                         return 0;
 
 }
